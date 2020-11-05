@@ -3,23 +3,25 @@ import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib
 
+# 官方文档：https://matplotlib.org/gallery/index.html
+
 # 设置matplotlib正常显示中文和负号
-matplotlib.rcParams['font.sans-serif']=['SimHei']   # 用黑体显示中文
-matplotlib.rcParams['axes.unicode_minus']=False     # 正常显示负号
+matplotlib.rcParams['font.sans-serif'] = ['SimHei']  # 用黑体显示中文
+matplotlib.rcParams['axes.unicode_minus'] = False  # 正常显示负号
 
 file_path = 'E:/bigdata/data/tg_ppq&upq.csv'
 
 file = pd.read_csv(file_path)
 df = pd.DataFrame(file)
 
-qudf = df[(df['LINELOSS_RATE']>0) & (df['LINELOSS_RATE'] <10) & (df['PPQ'] <200000)]
+qudf = df[(df['LINELOSS_RATE'] > 0) & (df['LINELOSS_RATE'] < 10) & (df['PPQ'] < 200000)]
 count = qudf['STAT_DATE'].value_counts(normalize=True)
 ppq = qudf['PPQ']
 upq = qudf['UPQ']
 lineloss_rate = qudf['LINELOSS_RATE']
 
-pldf = qudf[['PPQ','LINELOSS_RATE']]
-uldf = qudf[['UPQ','LINELOSS_RATE']]
+pldf = qudf[['PPQ', 'LINELOSS_RATE']]
+uldf = qudf[['UPQ', 'LINELOSS_RATE']]
 # print(df.index)
 # print(df.columns)
 print(df.info())
@@ -36,7 +38,6 @@ print(df.info())
 # print(sppq)
 
 
-
 # x = np.arange(1,11)
 # y = 2 * x + 5
 
@@ -44,7 +45,6 @@ print(df.info())
 绘制折线图
 """
 # plt.plot(lineloss_rate,ppq)
-
 
 
 """
@@ -60,7 +60,6 @@ alpha:透明度
 # plt.title("供电量与线损率关系图")
 # plt.xlabel('供电量')
 # plt.ylabel('线损率')
-
 
 
 # label_list = ['1', '2', '3', '4','5','6','7','8','9','10']    # 横坐标刻度显示值
@@ -91,7 +90,6 @@ label:为后面设置legend准备
 #     plt.text(rect.get_x() + rect.get_width() / 2, height+1, str(height), ha="center", va="bottom")
 
 
-
 """
 绘制散点图
 """
@@ -106,7 +104,7 @@ x = uldf[['LINELOSS_RATE']]
 plt.title("售电量与线损率关系图")
 plt.ylabel('售电量')
 plt.xlabel('线损率')
-plt.scatter(x, y, s=1., c=None, marker=None, cmap=None, norm=None, vmin=None, vmax=None, alpha=None, linewidths=None, verts=None, edgecolors=None, hold=None, data=None)
-
+plt.scatter(x, y, s=1., c=None, marker=None, cmap=None, norm=None, vmin=None, vmax=None, alpha=None, linewidths=None,
+            verts=None, edgecolors=None, hold=None, data=None)
 
 plt.show()
