@@ -28,6 +28,8 @@ headers = {
     'Upgrade-Insecure-Requests': '1',
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'}
 
+#获取气象局数据
+
 citys = ['101090303', '101090410', '101090506']
 
 citys_dict = {'101090303': '张北', '101090410': '围场', '101090506': '乐亭'}
@@ -47,8 +49,7 @@ def send_mail():
     cur_date = time.strftime("%Y%m%d")
     cur_time = time.strftime("%Y-%m-%d %H:%M:%S")
     print(cur_time)
-    sql = "select city_no, max(d000),max(d0001),sum(float(d002)) fz from weather_fz where stat_date = '{0}' group by city_no".format(
-        cur_date)
+    sql = "select city_no, max(d000),max(d0001),sum(float(d002)) fz from weather_fz where stat_date = '{0}' group by city_no".format(cur_date)
     cur.execute(sql)
     rows = cur.fetchall()
     sub = cur_time + '辐照数据'
@@ -56,14 +57,14 @@ def send_mail():
     for row in rows:
         send_msg = send_msg + row[0] + '({0}):{1}\n'.format(citys_dict[row[0]], int(row[3] * 36 / 100 + 0.5))
     send_msg = send_msg + '\n\n天气数据:\n'
-    sql = "select stat_date,city_no,avg(float(d002)),sum(float(d006)) from weather_obverse where stat_date = '{0}' group by city_no,stat_date  order by city_no".format(
-        cur_date)
+    sql = "select stat_date,city_no,avg(float(d002)),sum(float(d006)) from weather_obverse where stat_date = '{0}' group by city_no,stat_date  order by city_no" \
+        .format(cur_date)
     cur.execute(sql)
     rows = cur.fetchall()
     # send_msg = send_msg + 'city_no,city_name,father_city,stat_date,max(d002),min(d002),max(d005),min(d005)\n'
     for row in rows:
-        send_msg = send_msg + "insert into llys.fc_gc_weather(data_date,station,precipitation,temperature )values('{0}','{1}','{2}','{3}')\n".format(
-            row[0], row[1], row[3], row[2])
+        send_msg = send_msg + "insert into llys.fc_gc_weather(data_date,station,precipitation,temperature )values('{0}','{1}','{2}','{3}')\n" \
+            .format(row[0], row[1], row[3], row[2])
     send_msg = send_msg + '\n\n辐照明细:\n'
     sql = "select * from weather_fz where stat_date = '{0}' order by city_no,d000".format(cur_date)
     cur.execute(sql)
@@ -106,8 +107,8 @@ def get_fz_data():
         while response == None:
             try:
                 response = requests.get(
-                    'http://way.weatherdt.com/apimall/basic/grid.htm?station={0}&type=raid1h&key=da501d6a4e89eb65365149f15183d537'.format(
-                        city), headers=headers)
+                    'http://way.weatherdt.com/apimall/basic/grid.htm?station={0}&type=raid1h&key=da501d6a4e89eb65365149f15183d537'
+                        .format(city), headers=headers)
             except:
                 print("net work connect failed, wait 10 second and connect again")
                 time.sleep(10)
@@ -115,75 +116,76 @@ def get_fz_data():
         r_json = response.json();
         # r_json = json.loads(response.json());
         # print(r_json['result']['raid1h'][city][0])
-        cur.execute("select * from weather_fz where city_no = '{0}' and d0001 = '{1}'".format(city, r_json['result'][
-            'raid1h'][city][0]['0001']))
+        cur.execute("select * from weather_fz where city_no = '{0}' and d0001 = '{1}'"
+                    .format(city, r_json['result']['raid1h'][city][0]['0001']))
         rows = cur.fetchall()
         if (len(rows) == 0):
             sql = '''insert into weather_fz(city_no,d000,d0001,stat_date,d001,d002,d003,d004,d005,d006,d007)
-                 values('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}')'''.format(city,
-                                                                                                      r_json['result'][
-                                                                                                          'raid1h'][
-                                                                                                          city][0][
-                                                                                                          '000'] \
-                                                                                                      ,
-                                                                                                      r_json['result'][
-                                                                                                                            'raid1h'][
-                                                                                                                            city][
-                                                                                                                            0][
-                                                                                                                            '0001'],
-                                                                                                      r_json['result'][
-                                                                                                          'raid1h'][
-                                                                                                          city][0][
-                                                                                                          '000'][0:8],
-                                                                                                      r_json['result'][
-                                                                                                                            'raid1h'][
-                                                                                                                            city][
-                                                                                                                            0][
-                                                                                                                            '001'] \
-                                                                                                      ,
-                                                                                                      r_json['result'][
-                                                                                                                            'raid1h'][
-                                                                                                                            city][
-                                                                                                                            0][
-                                                                                                                            '002'],
-                                                                                                      r_json['result'][
-                                                                                                                            'raid1h'][
-                                                                                                                            city][
-                                                                                                                            0][
-                                                                                                                            '003'],
-                                                                                                      r_json['result'][
-                                                                                                                            'raid1h'][
-                                                                                                                            city][
-                                                                                                                            0][
-                                                                                                                            '004'] \
-                                                                                                      ,
-                                                                                                      r_json['result'][
-                                                                                                                            'raid1h'][
-                                                                                                                            city][
-                                                                                                                            0][
-                                                                                                                            '005'],
-                                                                                                      r_json['result'][
-                                                                                                                            'raid1h'][
-                                                                                                                            city][
-                                                                                                                            0][
-                                                                                                                            '006'],
-                                                                                                      r_json['result'][
-                                                                                                                            'raid1h'][
-                                                                                                                            city][
-                                                                                                                            0][
-                                                                                                                            '007'])
+                                  values('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}')''' \
+                .format(city,
+                        r_json['result'][
+                            'raid1h'][
+                            city][0][
+                            '000'] \
+                        ,
+                        r_json['result'][
+                            'raid1h'][
+                            city][
+                            0][
+                            '0001'],
+                        r_json['result'][
+                            'raid1h'][
+                            city][0][
+                            '000'][0:8],
+                        r_json['result'][
+                            'raid1h'][
+                            city][
+                            0][
+                            '001'] \
+                        ,
+                        r_json['result'][
+                            'raid1h'][
+                            city][
+                            0][
+                            '002'],
+                        r_json['result'][
+                            'raid1h'][
+                            city][
+                            0][
+                            '003'],
+                        r_json['result'][
+                            'raid1h'][
+                            city][
+                            0][
+                            '004'] \
+                        ,
+                        r_json['result'][
+                            'raid1h'][
+                            city][
+                            0][
+                            '005'],
+                        r_json['result'][
+                            'raid1h'][
+                            city][
+                            0][
+                            '006'],
+                        r_json['result'][
+                            'raid1h'][
+                            city][
+                            0][
+                            '007'])
             cur.execute(sql);
             cur.execute('commit');
-            log = time.strftime("%H:%M:%S") + ' | insert [{0},{1}] success'.format(city,
-                                                                                   r_json['result']['raid1h'][city][0][
-                                                                                       '000'])
+            log = time.strftime("%H:%M:%S") + ' | insert [{0},{1}] success' \
+                .format(city, r_json['result']['raid1h'][city][0]['000'])
             print(log)
             file_obj.writelines(log + '\n')
             flag = 1
         else:
-            log = time.strftime("%H:%M:%S") + ' | data [{0},{1}] has been inserted'.format(city,
-                                                                                           r_json['result']['raid1h'][
-                                                                                               city][0]['000'])
+            log = time.strftime("%H:%M:%S") + ' | data [{0},{1}] has been inserted' \
+                .format(city,
+                        r_json['result']['raid1h'][
+                            city][0]['000'])
             print(log)
             file_obj.writelines(log + '\n')
         battch_no = r_json['result']['raid1h'][city][0]['000']
@@ -192,7 +194,7 @@ def get_fz_data():
     file_obj.close()
     cur_date = time.strftime("%Y%m%d")
     if ((battch_no == cur_date + '16' or battch_no == cur_date + '17' or battch_no == cur_date + '18') and flag == 1):
-        send_mail();
+        send_mail()
 
 
 def get_weather_data():
@@ -216,7 +218,7 @@ def get_weather_data():
         cur_citys.append(city[0])
         i = i + 1
         n = n + 1
-        if (i <= 19 and n < len(city_dict)):
+        if i <= 19 and n < len(city_dict):
             citystr = citystr + city[0] + '|'
         else:
             citystr = citystr + city[0]
@@ -231,62 +233,64 @@ def get_weather_data():
                     time.sleep(10)
             r_json = response.json();
             cur.execute(
-                "select * from weather_obverse where stat_date = '{0}' and substr(d000,1,2) = '{1}'".format(cur_date,
-                                                                                                            r_json[
-                                                                                                                'observe'][
-                                                                                                                cur_citys[
-                                                                                                                    0]][
-                                                                                                                '1001002'][
-                                                                                                                '000'][
-                                                                                                            0:2]))
+                "select * from weather_obverse where stat_date = '{0}' and substr(d000,1,2) = '{1}'"
+                    .format(cur_date,
+                            r_json[
+                                'observe'][
+                                cur_citys[
+                                    0]][
+                                '1001002'][
+                                '000'][
+                            0:2]))
             rows = cur.fetchall()
             if (len(rows) == 0 or j == 1):
                 j = 1
                 for row in cur_citys:
                     sql = '''insert into weather_obverse(city_no,city_name,father_city,stat_date,d000,d002,d003,d004,d005,d006,d007)
-                         values('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}')'''.format(row,
-                                                                                                              city_dict[
-                                                                                                                  row][
-                                                                                                                  1],
-                                                                                                              city_dict[
-                                                                                                                                            row][
-                                                                                                                                            2],
-                                                                                                              cur_date,
-                                                                                                              r_json[
-                                                                                                                                            'observe'][
-                                                                                                                                            row][
-                                                                                                                                            '1001002'][
-                                                                                                                                            '000'] \
-                                                                                                              , r_json[
-                                                                                                                                            'observe'][
-                                                                                                                                            row][
-                                                                                                                                            '1001002'][
-                                                                                                                                            '002'],
-                                                                                                              r_json[
-                                                                                                                                            'observe'][
-                                                                                                                                            row][
-                                                                                                                                            '1001002'][
-                                                                                                                                            '003'],
-                                                                                                              r_json[
-                                                                                                                                            'observe'][
-                                                                                                                                            row][
-                                                                                                                                            '1001002'][
-                                                                                                                                            '004'] \
-                                                                                                              , r_json[
-                                                                                                                                            'observe'][
-                                                                                                                                            row][
-                                                                                                                                            '1001002'][
-                                                                                                                                            '005'],
-                                                                                                              r_json[
-                                                                                                                                            'observe'][
-                                                                                                                                            row][
-                                                                                                                                            '1001002'][
-                                                                                                                                            '006'],
-                                                                                                              r_json[
-                                                                                                                                            'observe'][
-                                                                                                                                            row][
-                                                                                                                                            '1001002'][
-                                                                                                                                            '007'], )
+                         values('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}')''' \
+                        .format(row,
+                                city_dict[
+                                    row][
+                                    1],
+                                city_dict[
+                                    row][
+                                    2],
+                                cur_date,
+                                r_json[
+                                    'observe'][
+                                    row][
+                                    '1001002'][
+                                    '000'] \
+                                , r_json[
+                                    'observe'][
+                                    row][
+                                    '1001002'][
+                                    '002'],
+                                r_json[
+                                    'observe'][
+                                    row][
+                                    '1001002'][
+                                    '003'],
+                                r_json[
+                                    'observe'][
+                                    row][
+                                    '1001002'][
+                                    '004'] \
+                                , r_json[
+                                    'observe'][
+                                    row][
+                                    '1001002'][
+                                    '005'],
+                                r_json[
+                                    'observe'][
+                                    row][
+                                    '1001002'][
+                                    '006'],
+                                r_json[
+                                    'observe'][
+                                    row][
+                                    '1001002'][
+                                    '007'], )
                     cur.execute(sql);
                     cur.execute('commit');
                     log = time.strftime("%H:%M:%S") + ' | insert [{0},{1}] success'.format(row, r_json['observe'][row][
