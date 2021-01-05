@@ -28,7 +28,7 @@ headers = {
     'Upgrade-Insecure-Requests': '1',
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'}
 
-#获取气象局数据
+# 获取气象局数据
 
 citys = ['101090303', '101090410', '101090506']
 
@@ -57,23 +57,19 @@ def send_mail():
     for row in rows:
         send_msg = send_msg + row[0] + '({0}):{1}\n'.format(citys_dict[row[0]], int(row[3] * 36 / 100 + 0.5))
     send_msg = send_msg + '\n\n天气数据:\n'
-    sql = "select stat_date,city_no,avg(float(d002)),sum(float(d006)) from weather_obverse where stat_date = '{0}' group by city_no,stat_date  order by city_no" \
-        .format(cur_date)
+    sql = "select stat_date,city_no,avg(float(d002)),sum(float(d006)) from weather_obverse where stat_date = '{0}' group by city_no,stat_date  order by city_no".format(cur_date)
     cur.execute(sql)
     rows = cur.fetchall()
     # send_msg = send_msg + 'city_no,city_name,father_city,stat_date,max(d002),min(d002),max(d005),min(d005)\n'
     for row in rows:
-        send_msg = send_msg + "insert into llys.fc_gc_weather(data_date,station,precipitation,temperature )values('{0}','{1}','{2}','{3}')\n" \
-            .format(row[0], row[1], row[3], row[2])
+        send_msg = send_msg + "insert into llys.fc_gc_weather(data_date,station,precipitation,temperature )values('{0}','{1}','{2}','{3}')\n".format(row[0], row[1], row[3], row[2])
     send_msg = send_msg + '\n\n辐照明细:\n'
     sql = "select * from weather_fz where stat_date = '{0}' order by city_no,d000".format(cur_date)
     cur.execute(sql)
     rows = cur.fetchall()
     send_msg = send_msg + 'city_no,d000,d0001,stat_date,d001,d002,d003,d004,d005,d006,d007\n'
     for row in rows:
-        send_msg = send_msg + '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}\n'.format(row[0], row[1], row[2], row[3],
-                                                                                      row[4], row[5], row[6], row[7],
-                                                                                      row[8], row[9], row[10])
+        send_msg = send_msg + '{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}\n'.format(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10])
 
     try:
         msg = MIMEMultipart('related')
